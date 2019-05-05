@@ -1,0 +1,28 @@
+@import url(../css/fonts.css);
+
+html {
+}
+
+body {
+    font-family: 'Droid Serif';
+    background-color: black;
+    color: #fefefe;
+}
+
+h1, h2, h3 {
+    font-family: 'Yanone Kaffeesatz';
+    font-weight: normal;
+}
+
+.remark-code, .remark-inline-code {
+    font-family: 'Ubuntu Mono';
+}
+
+.remark-slide-container{
+    background-color: white;
+}
+
+.remark-slide-content{
+    background-color: #252621;
+    /*background-color: #272822;*/
+}
