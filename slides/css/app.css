@@ -26,3 +26,20 @@ h1, h2, h3 {
     background-color: #252621;
     /*background-color: #272822;*/
 }
+
+
+.subtext{
+    color:gray !important;
+    font-size: smaller;
+}
+
+/*
+.remark-code {
+    background-color: lightgray;
+    border: none;
+}
+.remark-code-line {
+    background-color: lightgray;
+    border: none;
+}
+*/
