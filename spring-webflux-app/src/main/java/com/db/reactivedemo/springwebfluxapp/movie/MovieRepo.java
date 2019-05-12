@@ -43,7 +43,7 @@ public class MovieRepo {
         favorites.add(new Favorites("fjones", Arrays.asList(byTitle.get("Fight Club"), byTitle.get("Speed"))));
         histories.add(new History("fjones", Arrays.asList(byTitle.get("Fight Club"), byTitle.get("Seven"))));
 
-        favorites.add(new Favorites("dblake", Arrays.asList(byTitle.get("The Expendables"), byTitle.get("Predator"))));
+        histories.add(new History("dblake", Arrays.asList(byTitle.get("Oceans 11"), byTitle.get("Predator"))));
     }
 
     private void populate() {
@@ -69,6 +69,16 @@ public class MovieRepo {
                 Arrays.asList("Will Smith",
                     "Tommy Lee Jones",
                     "Linda Fiorentino"
+                )),
+            new Movie("Oceans 11",
+                Arrays.asList("Matt Damon",
+                    "George Clooney",
+                    "Brad Pitt"
+                )),
+            new Movie("Saving Private Ryan",
+                Arrays.asList("Tom Hanks",
+                    "Edward Burns",
+                    "Matt Damon"
                 )),
             new Movie("The Terminator",
                 Arrays.asList("Arnold Schwarzenegger",
@@ -101,16 +111,7 @@ public class MovieRepo {
                     "David Morse",
                     "Bonnie Hunt"
                 )),
-            new Movie("Saving Private Ryan",
-                Arrays.asList("Tom Hanks",
-                    "Edward Burns",
-                    "Matt Damon"
-                )),
-            new Movie("Oceans 11",
-                Arrays.asList("Matt Damon",
-                    "George Clooney",
-                    "Brad Pitt"
-                )),
+
             new Movie("Fight Club",
                 Arrays.asList("Helena Bonham Carter",
                     "Edward Norton",
@@ -135,6 +136,7 @@ public class MovieRepo {
     public Mono<Favorites> userFavorites(String userName) {
         return Flux.fromIterable(favorites)
             .filter(it -> it.getUserName().equals(userName))
-            .singleOrEmpty();
+            .defaultIfEmpty(new Favorites(userName, Collections.emptyList()))
+            .single();
     }
 }

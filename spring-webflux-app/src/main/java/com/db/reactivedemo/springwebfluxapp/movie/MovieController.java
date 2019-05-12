@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
@@ -20,6 +21,11 @@ public class MovieController {
     @Autowired
     public MovieController(MovieRepo movieRepo) {
         this.movieRepo = movieRepo;
+    }
+
+    @GetMapping("/all")
+    public Flux<Movie> all() {
+        return movieRepo.all();
     }
 
     @GetMapping("/favorites/{userName}")
@@ -36,7 +42,8 @@ public class MovieController {
     public Mono<History> history(@PathVariable String userName) {
         return Flux.fromIterable(movieRepo.getHistories())
             .filter(history -> history.getUserName().equals(userName))
-            .singleOrEmpty();
+            .defaultIfEmpty(new History(userName, Collections.emptyList()))
+            .single();
     }
 
     @GetMapping("/actor/{actor}")

@@ -1,16 +1,11 @@
 package com.db.reactivedemo.springwebfluxapp;
 
 import com.db.reactivedemo.springwebfluxapp.movie.Favorites;
-import com.db.reactivedemo.springwebfluxapp.movie.History;
 import com.db.reactivedemo.springwebfluxapp.movie.Movie;
 import com.db.reactivedemo.springwebfluxapp.movie.MovieRepo;
 import com.db.reactivedemo.springwebfluxapp.user.User;
+import com.db.reactivedemo.springwebfluxapp.user.UserInfo;
 import com.db.reactivedemo.springwebfluxapp.user.UserRepo;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -37,18 +31,13 @@ import java.util.Map;
 @TestConfiguration
 public class ServiceTests {
 
-    @Autowired
-    private Solution solution;
+    private Solution solution = new Solution();
 
     @Autowired
     private UserRepo userRepo;
 
     @Autowired
     private MovieRepo movieRepo;
-
-    private WebClient webClient = WebClient.builder()
-        .defaultHeader("Accept", "application/stream+json")
-        .build();
 
     private RestTemplate restTemplate = new RestTemplate();
 
@@ -117,53 +106,21 @@ public class ServiceTests {
             .collectMap(Tuple2::getT1, Tuple2::getT2);
 
         StepVerifier.create(map)
-            .assertNext(it -> {
-                Assert.assertEquals(movieByActor, it);
-            })
+            .assertNext(it -> Assert.assertEquals(movieByActor, it))
             .verifyComplete()
         ;
 
     }
 
     @Test
-    public void getRecommendedMovies() {
+    public void getUserInfo() {
+        List<UserInfo> block = userRepo.getAllUsers()
+            .map(User::getUserName)
+            .flatMap(solution::getUserInfo)
+            .collectList()
+            .block();
 
-        Flux<Movie> sdoo = solution.recommendedMovies("sdoo");
-
-
-    }
-
-    @Test
-    public void getRecommendedMovies2() {
-        Mono<User> scooby = userRepo.byUserName("sdoo");
-        Mono<UserInfo> userInfoMono = scooby.flatMap(user -> Mono.zip(
-            scooby,
-            solution.getFavoritesForUser(user.getUserName()),
-            solution.historyForUser(user.getUserName())
-        )
-            .map(t3 -> {
-                UserInfo userInfo = UserInfo.builder()
-                    .user(t3.getT1())
-                    .favorites(t3.getT2())
-                    .history(t3.getT3()).build();
-                solution.recommendedMovies(userInfo.getFavorites(), userInfo.getHistory())
-                    .collectList().map(userInfo::setRecommended);
-                return userInfo;
-            }));
-
+        System.out.println(block);
 
     }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Builder
-    @Accessors(chain = true)
-    static class UserInfo {
-        private User user;
-        private Favorites favorites;
-        private History history;
-        private List<Movie> recommended;
-    }
-
 }
