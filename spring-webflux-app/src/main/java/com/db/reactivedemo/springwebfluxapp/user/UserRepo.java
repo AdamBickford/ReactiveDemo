@@ -19,6 +19,10 @@ public class UserRepo {
         return all;
     }
 
+    public Map<String, User> getByUserName() {
+        return byUserName;
+    }
+
     private void populate() {
         all = Flux.just(
             new User("sdoo", "Scooby", "Doo"),

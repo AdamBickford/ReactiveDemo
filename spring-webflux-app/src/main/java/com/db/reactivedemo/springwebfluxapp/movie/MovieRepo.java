@@ -2,6 +2,7 @@ package com.db.reactivedemo.springwebfluxapp.movie;
 
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -13,20 +14,36 @@ public class MovieRepo {
 
     private Flux<Movie> all;
     private Map<String, List<Movie>> movieByActor;
-    private Map<String, List<Movie>> favorites = new HashMap<>();
+    private List<Favorites> favorites = new ArrayList<>();
+    private List<History> histories = new ArrayList<>();
 
     public Flux<Movie> all() {
         return all;
+    }
+
+    public List<Favorites> getFavorites() {
+        return favorites;
+    }
+
+    public List<History> getHistories() {
+        return histories;
     }
 
     @PostConstruct
     public void init() {
         populate();
         Map<String, Movie> byTitle = all().collectMap(Movie::getTitle).block();
-        favorites.put("sdoo", Arrays.asList(byTitle.get("Terminator"), byTitle.get("Rocky")));
-        favorites.put("srogers", Arrays.asList(byTitle.get("Green Mile"), byTitle.get("Speed")));
-        favorites.put("fjones", Arrays.asList(byTitle.get("Fight Club"), byTitle.get("Speed")));
-        favorites.put("dblake", Arrays.asList(byTitle.get("The Expendables"), byTitle.get("Predator")));
+
+        favorites.add(new Favorites("sdoo", Arrays.asList(byTitle.get("The Terminator"))));
+        histories.add(new History("sdoo", Arrays.asList(byTitle.get("The Terminator"), byTitle.get("Rocky"), byTitle.get("The Expendables"))));
+
+        favorites.add(new Favorites("srogers", Arrays.asList(byTitle.get("The Green Mile"), byTitle.get("Speed"))));
+        histories.add(new History("srogers", Arrays.asList(byTitle.get("The Green Mile"), byTitle.get("Speed"))));
+
+        favorites.add(new Favorites("fjones", Arrays.asList(byTitle.get("Fight Club"), byTitle.get("Speed"))));
+        histories.add(new History("fjones", Arrays.asList(byTitle.get("Fight Club"), byTitle.get("Seven"))));
+
+        favorites.add(new Favorites("dblake", Arrays.asList(byTitle.get("The Expendables"), byTitle.get("Predator"))));
     }
 
     private void populate() {
@@ -48,6 +65,11 @@ public class MovieRepo {
 
     private void populateAll() {
         all = Flux.just(
+            new Movie("Men In Black",
+                Arrays.asList("Will Smith",
+                    "Tommy Lee Jones",
+                    "Linda Fiorentino"
+                )),
             new Movie("The Terminator",
                 Arrays.asList("Arnold Schwarzenegger",
                     "Linda Hamilton",
@@ -68,11 +90,7 @@ public class MovieRepo {
                     "Sylvester Stallone",
                     "Chuck Norris"
                 )),
-            new Movie("Men In Black",
-                Arrays.asList("Will Smith",
-                    "Tommy Lee Jones",
-                    "Linda Fiorentino"
-                )),
+
             new Movie("Speed",
                 Arrays.asList("Keanu Reeves",
                     "Sandra Bullock",
@@ -106,7 +124,17 @@ public class MovieRepo {
         );
     }
 
-    public List<Movie> byUser(String userName) {
-        return favorites.getOrDefault(userName, Collections.emptyList());
+    public List<Movie> getMoviesByActor(String actor) {
+        return movieByActor.getOrDefault(actor, Collections.emptyList());
+    }
+
+    public Map<String, List<Movie>> getMoviesByActor() {
+        return movieByActor;
+    }
+
+    public Mono<Favorites> userFavorites(String userName) {
+        return Flux.fromIterable(favorites)
+            .filter(it -> it.getUserName().equals(userName))
+            .singleOrEmpty();
     }
 }
