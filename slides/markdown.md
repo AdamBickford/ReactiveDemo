@@ -11,27 +11,6 @@ class: center, top
 ---
 
 
-
-
-# Why Reactive?
-
---
-
-+ Async
-
---
-  + Efficiently Scale I/O
---
-name: 'outline'
-  + Rich operators
---
-
-  + Micro-services
----
-template:'outline'
-  + Micro-services (Obviously)
----
-
 ##Functional vs Procedural
 
 --
@@ -67,23 +46,16 @@ Functional
         + Context Agnostic
 ---
 
-#Why Functional?
-+ More Structure
 
---
-
-  + Why are you looping?
---
-name:'pro-functional'
-        + Filter
----
 
 ##Filtering Procedurally
 
 ```java
-private Set<User> filterProcedural() {
-    Set<User> set = new HashSet<>();
-    for (User user : getUsers()) {
+private Set<User> filterProdecural() {
+    HashSet<User> set = new HashSet<>();
+    List<User> users = getUsers();
+    for (int i = 0; i < users.size(); i++) {
+        User user = users.get(i);
         if (user.getFirstName().startsWith("a")) {
             set.add(user);
         }
@@ -106,36 +78,108 @@ private Set<User> filterProcedural() {
 ---
 name:'pro-functional'
 template:'pro-functional'
-        + Map
----
+  
+  ##Why are you looping?      
+--
 
-#Mapping Procedurally
+  + Map
+  
+--
 
-```java
-private Set<String> firstNamesImperative() {
-    Set<String> firstNames = new HashSet<>();
-    List<User> users = getUsers();
-    for (int i = 0; i < users.size(); i++) {
-        firstNames.add(users.get(i).getFirstName());
-    }
-    return firstNames;
-}
-```
+  + Filter
+  
+--
 
----
+  + Query (any, all, etc)
+  
+--
+   
+  + Aggregate (count, sum, reduce, etc)
 
-#Mapping Functionally
+--
 
-```java
-private Set<String> firstNamesFunctional() {
-    return getUsers().stream()
-        .map(User::getFirstName)
-        .collect(Collectors.toSet());
-}
-```
- 
----
-template:'pro-functional'
-        + Reduce
+  + #There's a function for that!
 
 ---
+
+
+# What is Reactive Programming?
+
+--
+
+
++ Functional programming over time
+
+
+--
+
++ Async
+
+--
+
++ Code Reacts to changes in Data
+
+--
+
++ Observer pattern
+
+---
+
+# Why Reactive?
+
+
+--
+
++ Concurrency Agnostic
+
+--
+  
++ Efficiently Utilize Memory
+  
+--
+  
+  + Reduce Threads
+  
+--
+name: 'outline'
+
+  + Rich operators
+
+--
+
+  + Micro-services
+
+---
+
+template:'outline'
+  + Micro-services (Obviously)
+  
+---
+
+#Project Reactor
+
++ Implementation of ReactiveX
+.subtext[h<span>ttps</span>://reactivex.io/]
+
+--
+
+  + Spring 5
+  
+--
+  
+  + Java 9
+  
+--
+
+  + .NET
+  
+--
+
+  + Javascript
+  
+--
+
+  + Python
+
+---
+
