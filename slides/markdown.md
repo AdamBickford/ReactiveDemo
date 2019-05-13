@@ -24,9 +24,9 @@ Procedural
   + *How* to do the work
 
 --
-        + Structured Programming (for, while, etc)
+        + Loops
 --
-        + State Management
+        + State Managed Control Flow
 --
         + Context Aware
 --
@@ -44,6 +44,8 @@ Functional
         + Minimal side effects
 --
         + Context Agnostic
+--
+        + Composable
 ---
 
 
@@ -117,11 +119,7 @@ template:'pro-functional'
 
 --
 
-+ Code Reacts to changes in Data
-
---
-
-+ Observer pattern
++ Code Reacts to Changes in Data
 
 ---
 
@@ -183,3 +181,76 @@ template:'outline'
 
 ---
 
+#Publisher
+
+--
+
++ Observer like
+
+--
+
+  + Mono 0-1
+
+--
+
+  + Flux 0-N (including infinite)
+
+--
+
++ Define pipeline of operators 
+
+--
+
++ Nothing happens until subscription
+
+--
+
+  + Cold
+
+--
+
+      + Each subscriber goes to source
+    
+--
+
+  + Hot
+ 
+--
+  
+      + Shared (pub-sub) 
+
+---
+
+#Operators
+
+--
+
++ Transform data
+  
+--
+
+  + Filter
+  
+--
+
+  + Map
+  
+--
+
+  + Zip
+
+--
+
++ Control data flow
+
+--
+
+  + Switching
+  
+--
+
+  + Delaying
+  
+--
+
+  + Buffering

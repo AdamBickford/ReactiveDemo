@@ -4,6 +4,7 @@ import com.db.reactivedemo.springwebfluxapp.user.User;
 import com.db.reactivedemo.springwebfluxapp.user.UserRepo;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class ReactiveOperators {
 
@@ -14,7 +15,6 @@ public class ReactiveOperators {
     @Test
     public void operators() {
         Flux<User> users = userRepo.getAllUsers();
-
 
 
     }
