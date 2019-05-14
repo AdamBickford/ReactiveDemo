@@ -10,74 +10,50 @@ class: center, top
 .subtext[h<span>ttps</span>://projectreactor.io/]
 ---
 
+name:'pvf'
 
-##Functional vs Procedural
+##Procedural vs Functional  
 
 --
-
+name:'procedural'
 Procedural
 
 --
 + Imperative
 --
 
-  + *How* to do the work
-
+    + *How* to do the work
 --
         + Loops
 --
-        + State Managed Control Flow
+        + Mutable State
 --
-        + Context Aware
+        + Shared State
+---
+template:'procedural'
+
++ What's the problem?
 --
 
-Functional
+    + Difficult to reason
+--
+        + State can change on every iteration
+--
+        + State can come from anywhere
+--
+    + Difficult to test
+--
+        + Environment setup can be complex
+--
+    + Difficult to compose
+--
+    + Concurrency dependent!
+--
+        + CPUs are not getting faster, more cores are common
 
---
-+ Declarative
-
---
-    + *What* to do
---
-        + Functions
---
-        + Minimal side effects
---
-        + Context Agnostic
---
-        + Composable
 ---
 
 
-
-##Filtering Procedurally
-
-```java
-private Set<User> filterProdecural() {
-    HashSet<User> set = new HashSet<>();
-    List<User> users = getUsers();
-    for (int i = 0; i < users.size(); i++) {
-        User user = users.get(i);
-        if (user.getFirstName().startsWith("a")) {
-            set.add(user);
-        }
-    }
-    return set;
-}
-```
----
-
-##Filtering Functionally
-
-```java
- private Set<User> filterFunctional() {
-    return getUsers().stream()
-        .filter(user -> user.getFirstName().startsWith("a"))
-        .collect(Collectors.toSet());
-    }
-```
-
----
 name:'pro-functional'
 template:'pro-functional'
   
@@ -104,39 +80,79 @@ template:'pro-functional'
 
 ---
 
+template:'pvf'
+name:'functional'
+Functional 
 
-# What is Reactive Programming?
+--
++ Declarative
+
+--
+    + *What* to do
+--
+        + Functions
+--
+        + Immutable state
+--
+        + No side effects
+---
+template:'functional'
++ Benefits
+--
+
+    + Pure Functions
+--
+        + Easy to test
+--
+        + Easy to reason
+--
+            + Output only depends on input
+--
+        + Composable
+--
+        + Deferred Execution
+--
+    + Immutable state
+--
+    + Minimal side effects
+--
+        + Concurrency Agnostic
+---
+template:'functional'
+
++ What's the problem *now*?
+
+--
+  + Concurrency! (Still? How?!)
+--
+
+      + Blocking is wasteful
+--
+      + Blocking adds latency
+--
+      + Threads use memory
+---
+
+## What is Reactive Programming?
 
 --
 
-
-+ Functional programming over time
-
-
---
-
-+ Async
++ Async Functional Programming
 
 --
 
 + Code Reacts to Changes in Data
+
+--
+
++ Time is a first class citizen
 
 ---
 
 # Why Reactive?
 
 
---
-
-+ Concurrency Agnostic
-
---
   
-+ Efficiently Utilize Memory
-  
---
-  
-  + Reduce Threads
   
 --
 name: 'outline'

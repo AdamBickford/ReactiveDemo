@@ -25,7 +25,7 @@ public class MovieController {
 
     @GetMapping("/all")
     public Flux<Movie> all() {
-        return movieRepo.all();
+        return movieRepo.getAll();
     }
 
     @GetMapping("/favorites/{userName}")
@@ -51,7 +51,8 @@ public class MovieController {
         return byActor2(actor)
             .delayElements(Duration.ofSeconds(
                 ThreadLocalRandom.current().nextBoolean() ? 0 : 2)
-            );
+            )
+            ;
     }
 
     @GetMapping("/actor2/{actor}")

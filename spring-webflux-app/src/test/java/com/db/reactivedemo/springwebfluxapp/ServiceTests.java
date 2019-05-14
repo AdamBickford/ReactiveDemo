@@ -44,8 +44,11 @@ public class ServiceTests {
     @Test
     public void resolveUserNamesBlocking() throws Exception {
         List<User> all = userRepo.getAllUsers().collectList().block();
-        Flux<User> timeout = userRepo.getAllUsers()
-            .map(User::getUserName)
+
+        Flux<String> userNames = userRepo.getAllUsers()
+            .map(User::getUserName);
+
+        Flux<User> timeout = userNames
             .parallel()
             .runOn(Schedulers.elastic())
             .map(userName -> restTemplate.getForObject(String.format("http://localhost:8090/user/%s", userName), User.class))
@@ -105,7 +108,8 @@ public class ServiceTests {
                 .map(movies -> Tuples.of(actor, movies)))
             .collectMap(Tuple2::getT1, Tuple2::getT2);
 
-        StepVerifier.create(map)
+        StepVerifier.create(map.timeout(Duration.ofSeconds(3)))
+
             .assertNext(it -> Assert.assertEquals(movieByActor, it))
             .verifyComplete()
         ;

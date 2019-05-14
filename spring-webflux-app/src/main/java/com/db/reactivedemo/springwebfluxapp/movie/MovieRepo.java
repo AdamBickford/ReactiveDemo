@@ -6,7 +6,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Component
@@ -17,7 +16,7 @@ public class MovieRepo {
     private List<Favorites> favorites = new ArrayList<>();
     private List<History> histories = new ArrayList<>();
 
-    public Flux<Movie> all() {
+    public Flux<Movie> getAll() {
         return all;
     }
 
@@ -29,10 +28,9 @@ public class MovieRepo {
         return histories;
     }
 
-    @PostConstruct
-    public void init() {
+    public MovieRepo() {
         populate();
-        Map<String, Movie> byTitle = all().collectMap(Movie::getTitle).block();
+        Map<String, Movie> byTitle = getAll().collectMap(Movie::getTitle).block();
 
         favorites.add(new Favorites("sdoo", Arrays.asList(byTitle.get("The Terminator"))));
         histories.add(new History("sdoo", Arrays.asList(byTitle.get("The Terminator"), byTitle.get("Rocky"), byTitle.get("The Expendables"))));

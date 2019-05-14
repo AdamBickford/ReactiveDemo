@@ -34,7 +34,6 @@ public class Solution {
             .uri("http://localhost:8090/favorites/{userName}", userName)
             .retrieve()
             .bodyToMono(Favorites.class)
-//            .doOnNext(it -> System.out.println("favorites for " + userName + " " + ))
             .retry(100)
             ;
     }
@@ -44,9 +43,9 @@ public class Solution {
             .timeout(Duration.ofMillis(800))
             .doOnError(TimeoutException.class, it -> System.out.println("Slow response, using failover url"))
             .onErrorResume(
-                TimeoutException.class,
                 it -> moviesForActor("http://localhost:8090/actor2/{userName}", actor)
-            );
+            )
+            ;
     }
 
     private Flux<Movie> moviesForActor(String url, String actor) {
