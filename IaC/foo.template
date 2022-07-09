@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   AWS CloudFormation Sample Template EC2InstanceWithSecurityGroupSample: Create
   an Amazon EC2 instance running the Amazon Linux AMI. The AMI is chosen based
@@ -14,6 +14,10 @@ Parameters:
     AllowedValues:
       - t3.micro
     ConstraintDescription: must be a valid EC2 instance type.
+  S3BucketResource:
+    Description: ARN that contains the application
+    Type: String
+    Default: '*'
   SSHLocation:
     Description: The IP address range that can be used to SSH to the EC2 instances
     Type: String
@@ -26,19 +30,14 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
 Resources:
-#  RxKeyPair:
-#    Type: AWS::EC2::KeyPair
-#    Properties:
-#      KeyName: RxKeyPair
   RxEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: !Ref InstanceType
       SecurityGroups:
         - !Ref RxInstanceSecurityGroup
-#      KeyName: !Ref RxKeyPair
       ImageId: !Ref LatestAmiId
-      IamInstanceProfile: !Ref ListS3BucketsInstanceProfile
+      IamInstanceProfile: !Ref RxS3BucketInstanceProfile
   RxInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -48,7 +47,7 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: !Ref SSHLocation
-  ListS3BucketsRole:
+  RxS3BucketRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -61,24 +60,24 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: "/"
-  ListS3BucketsPolicy:
+  RxS3BucketPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: ListS3BucketsPolicy
+      PolicyName: RxS3BucketPolicy
       PolicyDocument:
         Statement:
           - Effect: Allow
             Action:
               - s3:*
-            Resource: "*"
+            Resource: !Ref S3BucketResource
       Roles:
-        - Ref: ListS3BucketsRole
-  ListS3BucketsInstanceProfile:
+        - Ref: 'RxS3BucketRole'
+  RxS3BucketInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: "/"
       Roles:
-        - Ref: ListS3BucketsRole
+        - Ref: 'RxS3BucketRole'
 Outputs:
   InstanceId:
     Description: InstanceId of the newly created EC2 instance
@@ -98,5 +97,3 @@ Outputs:
     Value: !GetAtt
       - RxEC2Instance
       - PublicIp
-Metadata:
-  'AWS::CloudFormation::Designer': {}
