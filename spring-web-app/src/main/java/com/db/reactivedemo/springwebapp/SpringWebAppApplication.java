@@ -23,30 +23,13 @@ import java.util.stream.Stream;
 @Slf4j
 @Lazy(false)
 public class SpringWebAppApplication {
-    @Value("${downstream.service}")
+    @Value("${downstream.service:_}")
     private String downstreamService;
 
     @Value(value = "${service.name}")
     private String serviceName;
 
     private final RestTemplate client = new RestTemplate();
-
-//    @PostConstruct
-//    public void warmup() {
-//        if (Objects.equals(downstreamService, "_")) {
-//            return;
-//        }
-//        for (int i = 0; i < 10; i++) {
-//            try {
-//                Thread.sleep(100);
-//                BlockingResponse blockingResponse = new RestTemplate().getForObject(downstreamService + "/doIt", BlockingResponse.class, Collections.emptyList());
-////                BlockingResponse blockingResponse = new RestTemplate().getForObject(downstreamService + "/100", BlockingResponse.class);
-//                log.info(String.format("Warmup response: %s", blockingResponse));
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
     public static void main(String[] args) {
         SpringApplication.run(SpringWebAppApplication.class, args);
@@ -104,32 +87,6 @@ public class SpringWebAppApplication {
             .collect(Collectors.joining(",")));
         return params;
     }
-
-  /*  @GetMapping("/delay/{delayMillis}")
-    public BlockingMetrics delay(@PathVariable int delayMillis) {
-        LocalDateTime requestStart = LocalDateTime.now();
-        BlockingResponse result = client.getForObject(downstreamService + "/" + delayMillis, BlockingResponse.class);
-        LocalDateTime now = LocalDateTime.now();
-        return BlockingMetrics.builder()
-            .delay(delayMillis)
-            .requestTime(requestStart)
-            .responseTime(now)
-            .responses(Collections.singletonList(result))
-            .actual(milliTime(requestStart, now))
-            .build();
-    }
-
-    @GetMapping("/data/{delayMillis}")
-    public BlockingResponse data(@PathVariable int delayMillis) {
-        LocalDateTime now = LocalDateTime.now();
-        work(delayMillis);
-        return new BlockingResponse(
-            serviceName,
-            delayMillis,
-            now,
-            LocalDateTime.now()
-        );
-    }*/
 
     private static void work(long delayMillis) {
         try {
