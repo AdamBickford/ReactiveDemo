@@ -35,8 +35,8 @@ public class SpringWebAppApplication {
         SpringApplication.run(SpringWebAppApplication.class, args);
     }
 
-    @GetMapping("/doIt")
-    public List<BlockingResponse> doIt(@RequestParam("latencies") ArrayList<Integer> latencies) {
+    @GetMapping("/request")
+    public List<BlockingResponse> request(@RequestParam("latencies") ArrayList<Integer> latencies) {
         Integer delay = latencies.get(0);
         LocalDateTime start = LocalDateTime.now();
 
