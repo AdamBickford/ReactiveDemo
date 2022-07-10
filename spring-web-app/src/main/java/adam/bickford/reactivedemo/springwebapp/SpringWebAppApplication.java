@@ -67,7 +67,7 @@ public class SpringWebAppApplication {
     private Stream<BlockingResponse> downstreamCall(ArrayList<Integer> latencies) {
         return Arrays.stream(Objects.requireNonNull(
             client.getForEntity(
-                    downstreamService + "/doIt?latencies={latencies}",
+                    downstreamService + "/request?latencies={latencies}",
                     BlockingResponse[].class,
                     createParams(latencies)
                 )

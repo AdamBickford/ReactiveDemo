@@ -14,12 +14,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SpringBootApplication
 @RestController
@@ -39,30 +40,25 @@ public class SpringWebfluxAppApplication {
 
     @GetMapping("/request")
     public Mono<List<BlockingResponse>> request(@RequestParam("latencies") ArrayList<Integer> latencies) {
-        return Mono.just(latencies.get(0))
-            .flatMap(delay -> {
-                LocalDateTime now = LocalDateTime.now();
-                return work(delay).thenReturn(now)
-                    //if there's no downstream service or this is the last defined latency
-                    //consider it the end of the chain and return and empty list to merge
-                    //with our own metrics
-                    .then((((latencies.size() == 1) || downstreamService.equals("_"))
-                        ? getMetrics(now, delay)
-                        : downstreamCall(latencies).zipWith(getMetrics(now, delay)).map(it -> {
-                        ArrayList<BlockingResponse> blockingResponses = new ArrayList<>();
-                        blockingResponses.addAll(it.getT1());
-                        blockingResponses.addAll(it.getT2());
-                        return blockingResponses;
-                    })));
-            });
+        int delay = latencies.get(0);
+        boolean callDownstream = latencies.size() > 1 && !downstreamService.equals("_");
+        return Mono.just(Instant.now())
+            .delayElement(Duration.ofMillis(delay))
+            .flatMap(start -> getDownstreamResults(latencies, callDownstream)
+                .flatMap(downstreamResults -> getMetrics(start, delay)
+                    .map(metrics -> Stream.concat(
+                            downstreamResults.stream(),
+                            metrics.stream())
+                        .collect(Collectors.toList()))));
     }
 
-    private static Mono<Long> work(long delayMillis) {
-        return Mono.delay(Duration.ofMillis(delayMillis))
-            .thenReturn(delayMillis);
+    private Mono<? extends List<BlockingResponse>> getDownstreamResults(ArrayList<Integer> latencies, boolean callDownstream) {
+        return callDownstream
+            ? Mono.defer(() -> downstreamCall(latencies))
+            : Mono.just(Collections.emptyList());
     }
 
-    private Mono<List<BlockingResponse>> downstreamCall(ArrayList<Integer> latencies) {
+     private Mono<List<BlockingResponse>> downstreamCall(ArrayList<Integer> latencies) {
         String uri = downstreamService + "/request?latencies=" + latencies.stream()
             .skip(1)
             .map(Object::toString)
@@ -76,8 +72,8 @@ public class SpringWebfluxAppApplication {
             .map(Arrays::asList);
     }
 
-    private Mono<List<BlockingResponse>> getMetrics(LocalDateTime start, Integer delay) {
-        LocalDateTime now = LocalDateTime.now();
+    private Mono<List<BlockingResponse>> getMetrics(Instant start, Integer delay) {
+        Instant now = Instant.now();
         return Mono.just(Collections.singletonList(BlockingResponse.builder()
             .serviceName(serviceName)
             .requestTime(start)
@@ -87,8 +83,8 @@ public class SpringWebfluxAppApplication {
             .build()));
     }
 
-    private int getActual(LocalDateTime start, LocalDateTime end) {
-        return (int) ((end.toLocalTime().toNanoOfDay() - start.toLocalTime().toNanoOfDay()) / 1_000_000);
+    private int getActual(Instant start, Instant end) {
+        return (int) (end.toEpochMilli() - start.toEpochMilli());
     }
 
     @lombok.Data
@@ -99,7 +95,7 @@ public class SpringWebfluxAppApplication {
         String serviceName;
         int delay;
         int actual;
-        LocalDateTime requestTime;
-        LocalDateTime responseTime;
+        Instant requestTime;
+        Instant responseTime;
     }
 }
