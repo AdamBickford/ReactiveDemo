@@ -9,13 +9,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,37 +52,48 @@ public class SpringWebAppApplication {
         SpringApplication.run(SpringWebAppApplication.class, args);
     }
 
-
     @GetMapping("/doIt")
     public List<BlockingResponse> doIt(@RequestParam("latencies") ArrayList<Integer> latencies) {
-        if (latencies.isEmpty() || downstreamService.equals("_")) {
-            return Collections.singletonList(BlockingResponse.builder()
-                .serviceName(serviceName)
-                .requestTime(LocalDateTime.now())
-                .responseTime(LocalDateTime.now())
-                .delay(0)
-                .build());
+        Integer delay = latencies.get(0);
+        LocalDateTime start = LocalDateTime.now();
+
+        work(delay);
+
+        if (latencies.size() == 1 || downstreamService.equals("_")) {
+            return getMetrics(delay, start);
         }
 
-        HashMap<String, Object> params = createParams(latencies);
-
-        LocalDateTime requestStart = LocalDateTime.now();
-        String url = downstreamService + "/doIt?latencies={latencies}";
-        BlockingResponse[] forObject = client.getForEntity(
-                url,
-                BlockingResponse[].class,
-                params
+        return Stream.concat(
+                downstreamCall(latencies),
+                getMetrics(delay, start).stream()
             )
-            .getBody();
-
-        BlockingResponse response = BlockingResponse.builder()
-            .serviceName(serviceName)
-            .requestTime(requestStart)
-            .responseTime(LocalDateTime.now())
-            .delay(latencies.get(0))
-            .build();
-        return Stream.concat(Arrays.stream(forObject), Stream.of(response))
             .collect(Collectors.toList());
+    }
+
+    private List<BlockingResponse> getMetrics(Integer delay, LocalDateTime start) {
+        LocalDateTime now = LocalDateTime.now();
+        return Collections.singletonList(BlockingResponse.builder()
+            .serviceName(serviceName)
+            .requestTime(start)
+            .responseTime(now)
+            .delay(delay)
+            .actual(getActual(start, now))
+            .build());
+    }
+
+    private Stream<BlockingResponse> downstreamCall(ArrayList<Integer> latencies) {
+        return Arrays.stream(Objects.requireNonNull(
+            client.getForEntity(
+                    downstreamService + "/doIt?latencies={latencies}",
+                    BlockingResponse[].class,
+                    createParams(latencies)
+                )
+                .getBody()
+        ));
+    }
+
+    private int getActual(LocalDateTime start, LocalDateTime end) {
+        return (int) ((end.toLocalTime().toNanoOfDay() - start.toLocalTime().toNanoOfDay()) / 1_000_000);
     }
 
     private HashMap<String, Object> createParams(ArrayList<Integer> latencies) {
@@ -130,14 +139,6 @@ public class SpringWebAppApplication {
         }
     }
 
-    private static int milliTime(LocalDateTime start, LocalDateTime stop) {
-        return (int) (toEpocMilli(stop) - toEpocMilli(start));
-    }
-
-    private static long toEpocMilli(LocalDateTime localDateTime) {
-        return localDateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
-    }
-
     @lombok.Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -145,17 +146,8 @@ public class SpringWebAppApplication {
     static class BlockingResponse {
         String serviceName;
         int delay;
-        LocalDateTime requestTime;
-        LocalDateTime responseTime;
-    }
-
-    @lombok.Value
-    @Builder
-    static class BlockingMetrics {
-        int delay;
         int actual;
         LocalDateTime requestTime;
         LocalDateTime responseTime;
-        List<BlockingResponse> responses;
     }
 }
