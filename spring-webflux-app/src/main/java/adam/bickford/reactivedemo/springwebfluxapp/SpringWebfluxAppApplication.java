@@ -54,7 +54,7 @@ public class SpringWebfluxAppApplication {
 
     private Mono<? extends List<BlockingResponse>> getDownstreamResults(ArrayList<Integer> latencies, boolean callDownstream) {
         return callDownstream
-            ? Mono.defer(() -> downstreamCall(latencies))
+            ? downstreamCall(latencies)
             : Mono.just(Collections.emptyList());
     }
 

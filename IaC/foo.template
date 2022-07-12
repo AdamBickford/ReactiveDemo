@@ -38,6 +38,28 @@ Resources:
         - !Ref RxInstanceSecurityGroup
       ImageId: !Ref LatestAmiId
       IamInstanceProfile: !Ref RxS3BucketInstanceProfile
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          sudo yum install java-17-amazon-corretto-headless -y
+          export SPRING_PROFILES_ACTIVE=a
+          aws s3 cp s3://rx-demo/app.jar .
+          java -jar app.jar
+  RxEC2Instance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroups:
+        - !Ref RxInstanceSecurityGroup
+      ImageId: !Ref LatestAmiId
+      IamInstanceProfile: !Ref RxS3BucketInstanceProfile
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          sudo yum install java-17-amazon-corretto-headless -y
+          export SPRING_PROFILES_ACTIVE=b
+          aws s3 cp s3://rx-demo/app.jar .
+          java -jar app.jar
   RxInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -47,6 +69,10 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: !Ref SSHLocation
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 65000
+          CidrIp: 0.0.0.0/0
   RxS3BucketRole:
     Type: AWS::IAM::Role
     Properties:
@@ -82,6 +108,9 @@ Outputs:
   InstanceId:
     Description: InstanceId of the newly created EC2 instance
     Value: !Ref RxEC2Instance
+  InstanceId2:
+    Description: InstanceId of the newly created EC2 instance
+    Value: !Ref RxEC2Instance2
   AZ:
     Description: Availability Zone of the newly created EC2 instance
     Value: !GetAtt
@@ -96,4 +125,9 @@ Outputs:
     Description: Public IP address of the newly created EC2 instance
     Value: !GetAtt
       - RxEC2Instance
+      - PublicIp
+  PublicIP2:
+    Description: Public IP address of the newly created EC2 instance
+    Value: !GetAtt
+      - RxEC2Instance2
       - PublicIp

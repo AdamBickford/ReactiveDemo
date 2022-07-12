@@ -10,3 +10,5 @@ aws cloudformation delete-stack --stack-name mystack
 aws s3 cp s3://BUCKET-NAME/FILENAME
 
 aws s3 cp s3://rx-demo/foo.template .
+
+aws s3 cp s3://../spring-web-app/target/spring-web-app-0.0.1-SNAPSHOT.jar
