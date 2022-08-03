@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Lazy(false)
 public class SpringWebAppApplication {
-    @Value("${downstream.service:_}")
+    @Value("${downstream.service}")
     private String downstreamService;
 
     @Value(value = "${service.name}")
@@ -33,6 +34,11 @@ public class SpringWebAppApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SpringWebAppApplication.class, args);
+    }
+
+    @PostConstruct
+    public void stuff() {
+        log.error("adam startup: " + downstreamService);
     }
 
     @GetMapping("/request")
@@ -65,6 +71,7 @@ public class SpringWebAppApplication {
     }
 
     private Stream<BlockingResponse> downstreamCall(ArrayList<Integer> latencies) {
+        System.out.println("making request to " + downstreamService + "/request?latencies={latencies}");
         return Arrays.stream(Objects.requireNonNull(
             client.getForEntity(
                     downstreamService + "/request?latencies={latencies}",

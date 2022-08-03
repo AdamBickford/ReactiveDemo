@@ -6,36 +6,34 @@ export const options = {
     stages: [
         { duration: '10s', target: 10 }, // below normal load
         { duration: '1m', target: 50 }, // below normal load
-        { duration: '3m', target: 100 }, // below normal load
-        { duration: '3m', target: 200 }, // below normal load
-        // { duration: '3m', target: 400 }, // below normal load
-        // { duration: '3m', target: 800 }, // below normal load
-        // { duration: '30s', target: 200 }, // below normal load
-        // { duration: '30s', target: 300 }, // below normal load
-        // { duration: '30s', target: 200 }, // normal load
-        // { duration: '30s', target: 200 },
-        // { duration: '30s', target: 400 }, // around the breaking point
-        // { duration: '30s', target: 500 },
-        // { duration: '30s', target: 400 }, // beyond the breaking point
-        // { duration: '30s', target: 400 },
+        // { duration: '1m', target: 100 }, // below normal load
+        // { duration: '1m', target: 100 }, // below normal load
+        // { duration: '1m', target: 200 }, // below normal load
+        // { duration: '1m', target: 300 }, // below normal load
+        // { duration: '1m', target: 400 }, // below normal load
+        // { duration: '1m', target: 400 }, // below normal load
+        // { duration: '1m', target: 800 }, // below normal load
+        // { duration: '1m', target: 800 }, // below normal load
+        // { duration: '1m', target: 1200 }, // below normal load
+        // { duration: '1m', target: 1200 }, // below normal load
+        // { duration: '1m', target: 2000 }, // below normal load
+        // { duration: '1m', target: 2000 }, // below normal load
         { duration: '1m', target: 0 }, // scale down. Recovery stage.
     ],
 };
 
 export default function () {
-    const BASE_URL = 'http://host.docker.internal:8090/request?latencies='; // make sure this is not production
+    const BASE_URL = `http://${__ENV.THE_IP}:8081/request?latencies=`; // make sure this is not production
+    // const BASE_URL = 'http://localhost:8081/request?latencies='; // make sure this is not production
+    // const BASE_URL = 'http://host.docker.internal:8081/request?latencies='; // make sure this is not production
 
-    // http.get(`${BASE_URL}0,0`);
+    let response = http.get(`${BASE_URL}0,0`);
 
-    const responses = http.batch([
-        ['GET', `${BASE_URL}0,0`, null, { tags: { name: '0,0' } }],
-        // ['GET', `${BASE_URL}0,0`, null, { tags: { name: '10,100' } }],
-        // ['GET', `${BASE_URL}100,500`, null, { tags: { name: '0, 50' } }],
-        // ['GET', `${BASE_URL}/public/crocodiles/3/`, null, { tags: { name: 'PublicCrocs' } }],
-        // ['GET', `${BASE_URL}/public/crocodiles/4/`, null, { tags: { name: 'PublicCrocs' } }],
-    ]);
-    //
-    sleep(0.5);
+    if (response.status != 200) {
+        console.error('Could not send summary, got status ' + response.status);
+    }
+
+    sleep(1);
 }
 
-//docker run --rm -i grafana/k6 run - <load.js
+//docker run --rm -i -v "$PWD:/work" grafana/k6 run - <load.js > adamfooagain.txt 2>&1 &
