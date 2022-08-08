@@ -15,9 +15,13 @@ Parameters:
       - t3.micro
     ConstraintDescription: must be a valid EC2 instance type.
   S3BucketResource:
-    Description: ARN that contains the application
+    Description: The s3 bucket that will contain performance artifacts
     Type: String
     Default: '*'
+  TestName:
+    Description: Name of the test in s3
+    Type: String
+    Default: 'load.js'
   SSHLocation:
     Description: The IP address range that can be used to SSH to the EC2 instances
     Type: String
@@ -46,9 +50,9 @@ Resources:
               #!/bin/bash
               sudo yum install java-17-amazon-corretto-headless -y
               export SPRING_PROFILES_ACTIVE=a
-              export DOWNSTREAM_SERVICE=http://${THE_IP}:8091
+              export DOWNSTREAM_SERVICE=http://${THE_IP}:8081
               aws s3 cp s3://rx-demo/app.jar .
-              java -jar app.jar -Xmx=512M
+              java -jar app.jar -Xmx=64M
             - THE_IP: !GetAtt RxEC2Instance2.PrivateIp
   RxEC2Instance2:
     Type: AWS::EC2::Instance
@@ -64,7 +68,7 @@ Resources:
           sudo yum install java-17-amazon-corretto-headless -y
           export SPRING_PROFILES_ACTIVE=b
           aws s3 cp s3://rx-demo/app.jar .
-          java -jar app.jar -Xmx=512M
+          java -jar app.jar -Xmx=64M
   LoadGenerator:
     Type: AWS::EC2::Instance
     DependsOn: RxEC2Instance2
@@ -84,8 +88,9 @@ Resources:
               sudo service docker start
               sudo usermod -a -G docker ec2-user
               aws s3 cp s3://rx-demo/load.js /home/ec2-user
-              echo "the ip: ${THE_IP}" > /home/ec2-user/theip.txt
-            - THE_IP: !GetAtt RxEC2Instance2.PrivateIp
+              echo "${THE_IP}" > /home/ec2-user/theip.txt
+              sudo docker pull grafana/k6
+            - THE_IP: !GetAtt RxEC2Instance.PrivateIp
   RxInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
